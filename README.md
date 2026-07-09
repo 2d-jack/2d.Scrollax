@@ -9,6 +9,14 @@
   triggers a short, tactile sound, so scrolling feels like moving something physical.
 </p>
 
+## Download
+
+Grab the latest build from the [Releases page](https://github.com/2d-jack/2d.Scrollax/releases/tag/latest)
+— it's rebuilt automatically from `main` on every push. Unzip it, move
+`2d.Scrollax.app` to `/Applications`, then since it isn't notarized by Apple,
+right-click it and choose **Open** the first time (or run
+`xattr -cr /Applications/2d.Scrollax.app` in Terminal).
+
 ## What it does
 
 Scrollax watches trackpad scroll events system-wide and turns raw scroll distance into

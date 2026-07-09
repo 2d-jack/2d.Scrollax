@@ -1,0 +1,51 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "LICENSE"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build app bundle
+        run: ./build_app.sh
+
+      - name: Zip app bundle
+        run: |
+          cd .build/app
+          ditto -c -k --sequesterRsrc --keepParent "2d.Scrollax.app" "2d.Scrollax.zip"
+
+      - name: Publish rolling release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          TAG=latest
+          SHA_SHORT=$(git rev-parse --short HEAD)
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release delete "$TAG" --yes --cleanup-tag
+          fi
+
+          git tag -f "$TAG"
+          git push origin "$TAG" --force
+
+          gh release create "$TAG" \
+            ".build/app/2d.Scrollax.zip" \
+            --title "2d.Scrollax (latest build)" \
+            --notes "Automatically built from commit ${SHA_SHORT} on main. Unsigned/unnotarized — see the README for how to open it (right-click → Open, or \`xattr -cr\`)." \
+            --latest
