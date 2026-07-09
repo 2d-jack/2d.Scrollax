@@ -19,13 +19,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build app bundle
+      - name: Build app bundle and disk image
         run: ./build_app.sh
-
-      - name: Zip app bundle
-        run: |
-          cd .build/app
-          ditto -c -k --sequesterRsrc --keepParent "2d.Scrollax.app" "2d.Scrollax.zip"
 
       - name: Publish rolling release
         env:
@@ -45,7 +40,7 @@ jobs:
           git push origin "$TAG" --force
 
           gh release create "$TAG" \
-            ".build/app/2d.Scrollax.zip" \
+            ".build/app/2d.Scrollax.dmg" \
             --title "2d.Scrollax (latest build)" \
-            --notes "Automatically built from commit ${SHA_SHORT} on main. Unsigned/unnotarized — see the README for how to open it (right-click → Open, or \`xattr -cr\`)." \
+            --notes "Automatically built from commit ${SHA_SHORT} on main. Open the .dmg and drag the app into Applications. Unsigned/unnotarized — see the README for how to open it (right-click → Open, or \`xattr -cr\`)." \
             --latest

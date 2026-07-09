@@ -12,10 +12,10 @@
 ## Download
 
 Grab the latest build from the [Releases page](https://github.com/2d-jack/2d.Scrollax/releases/tag/latest)
-— it's rebuilt automatically from `main` on every push. Unzip it, move
-`2d.Scrollax.app` to `/Applications`, then since it isn't notarized by Apple,
-right-click it and choose **Open** the first time (or run
-`xattr -cr /Applications/2d.Scrollax.app` in Terminal).
+— it's rebuilt automatically from `main` on every push. Open the `.dmg` and drag
+`2d.Scrollax.app` into the **Applications** shortcut. Since it isn't notarized by
+Apple, right-click the app and choose **Open** the first time you launch it (or
+run `xattr -cr /Applications/2d.Scrollax.app` in Terminal).
 
 ## What it does
 
@@ -59,7 +59,8 @@ cd 2d.Scrollax
 ./build_app.sh
 ```
 
-This produces `.build/app/2d.Scrollax.app`. Move it to `/Applications` and open it.
+This produces `.build/app/2d.Scrollax.app` and `.build/app/2d.Scrollax.dmg`. Open the
+`.dmg` and drag the app into `/Applications`, or move the `.app` there directly.
 
 Since the app isn't notarized by Apple, Gatekeeper will block the first launch. Either
 right-click the app and choose **Open**, or run:

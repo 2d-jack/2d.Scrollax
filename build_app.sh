@@ -38,6 +38,17 @@ iconutil -c icns "$ICONSET" -o "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 echo "==> Ad-hoc code signing"
 codesign --force --deep --sign - "$APP_BUNDLE"
 
+echo "==> Building disk image"
+DMG_STAGING="$BUILD_DIR/dmg-staging"
+DMG_PATH="$BUILD_DIR/$BUNDLE_NAME.dmg"
+rm -rf "$DMG_STAGING"
+rm -f "$DMG_PATH"
+mkdir -p "$DMG_STAGING"
+cp -R "$APP_BUNDLE" "$DMG_STAGING/"
+ln -s /Applications "$DMG_STAGING/Applications"
+hdiutil create -volname "$BUNDLE_NAME" -srcfolder "$DMG_STAGING" -ov -format UDZO "$DMG_PATH" >/dev/null
+
 echo "==> Done: $APP_BUNDLE"
-echo "    Move it to /Applications and double-click to launch, or run:"
+echo "    $DMG_PATH"
+echo "    Open the .dmg and drag the app into Applications, or run:"
 echo "    open \"$APP_BUNDLE\""
