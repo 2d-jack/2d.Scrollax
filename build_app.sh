@@ -46,6 +46,7 @@ rm -f "$DMG_PATH"
 mkdir -p "$DMG_STAGING"
 cp -R "$APP_BUNDLE" "$DMG_STAGING/"
 ln -s /Applications "$DMG_STAGING/Applications"
+cp "ReadMeFirst.txt" "$DMG_STAGING/ReadMeFirst.txt"
 hdiutil create -volname "$BUNDLE_NAME" -srcfolder "$DMG_STAGING" -ov -format UDZO "$DMG_PATH" >/dev/null
 
 echo "==> Done: $APP_BUNDLE"
