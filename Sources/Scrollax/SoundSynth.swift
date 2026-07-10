@@ -83,24 +83,6 @@ enum Synth {
         return out
     }
 
-    /// A short, dull resonant pluck — a snap with the top end rolled off so it reads as
-    /// a soft "thup" rather than a bright click.
-    static func rubberSnap(seed: inout UInt64) -> [Float] {
-        let duration: Float = 0.09
-        let cutoffStart = randomFloat(650...950, seed: &seed)
-        let raw = exciteAndRing(
-            duration: duration,
-            burstDuration: 0.006,
-            cutoffStart: cutoffStart,
-            cutoffEnd: cutoffStart * 0.78,
-            resonance: 6,
-            bandMix: 0.55,
-            decayTau: duration * sampleRate / 5,
-            seed: &seed
-        )
-        return normalize(onePoleLowpass(raw, cutoff: 2400))
-    }
-
     /// A longer resonant ring with a descending pitch and a slow wobble — reads as a
     /// rubbery, gluey drag rather than continuous filtered static.
     static func glueyGrip(seed: inout UInt64) -> [Float] {
@@ -157,6 +139,67 @@ enum Synth {
             let sine = sin(2 * Float.pi * freq * Float(i) / sampleRate)
             let noiseOut = svf.process(noise[i]).low
             out[i] = (sine * 0.85 + noiseOut * 0.15) * env[i]
+        }
+        return normalize(out)
+    }
+
+    /// A lighter, quicker sibling of softPop — higher pitch with a slight downward
+    /// chirp, so it reads as a small airy bubble rather than a thock.
+    static func bubblePop(seed: inout UInt64) -> [Float] {
+        let duration: Float = 0.045
+        let n = Int(duration * sampleRate)
+        let freqStart = randomFloat(340...480, seed: &seed)
+        let noise = whiteNoise(n, seed: &seed)
+        var svf = StateVariableFilter(cutoff: 1400, resonance: 1.1, sampleRate: sampleRate)
+        let env = envelope(n, attack: 14, decayTau: Float(n) * 0.14)
+        var phase: Float = 0
+        var out = [Float](repeating: 0, count: n)
+        for i in 0..<n {
+            let t = Float(i) / Float(n)
+            let freq = freqStart * (1 - 0.35 * t)
+            phase += 2 * Float.pi * freq / sampleRate
+            let noiseOut = svf.process(noise[i]).low
+            out[i] = (sin(phase) * 0.8 + noiseOut * 0.2) * env[i]
+        }
+        return normalize(out)
+    }
+
+    /// A deeper, softer cousin of softPop — lower fundamental, slower attack, and a
+    /// heavier lowpass so it feels cushioned, like a fingertip on felt.
+    static func velvetTap(seed: inout UInt64) -> [Float] {
+        let duration: Float = 0.08
+        let n = Int(duration * sampleRate)
+        let freq = randomFloat(95...150, seed: &seed)
+        let noise = whiteNoise(n, seed: &seed)
+        var svf = StateVariableFilter(cutoff: 500, resonance: 1.0, sampleRate: sampleRate)
+        let env = envelope(n, attack: 55, decayTau: Float(n) * 0.2)
+        var out = [Float](repeating: 0, count: n)
+        for i in 0..<n {
+            let sine = sin(2 * Float.pi * freq * Float(i) / sampleRate)
+            let noiseOut = svf.process(noise[i]).low
+            out[i] = (sine * 0.9 + noiseOut * 0.1) * env[i]
+        }
+        return normalize(onePoleLowpass(out, cutoff: 1200))
+    }
+
+    /// A rounded "plip" — a sine that rises in pitch through the tail, which is what
+    /// the ear recognizes as a liquid drop. Kept mostly pure tone so it stays soft.
+    static func waterDrop(seed: inout UInt64) -> [Float] {
+        let duration: Float = 0.07
+        let n = Int(duration * sampleRate)
+        let freqStart = randomFloat(280...360, seed: &seed)
+        let freqEnd = freqStart * randomFloat(1.8...2.3, seed: &seed)
+        let noise = whiteNoise(n, seed: &seed)
+        var svf = StateVariableFilter(cutoff: 800, resonance: 1.2, sampleRate: sampleRate)
+        let env = envelope(n, attack: 25, decayTau: Float(n) * 0.18)
+        var phase: Float = 0
+        var out = [Float](repeating: 0, count: n)
+        for i in 0..<n {
+            let t = Float(i) / Float(n)
+            let freq = freqStart + (freqEnd - freqStart) * t * t
+            phase += 2 * Float.pi * freq / sampleRate
+            let noiseOut = svf.process(noise[i]).low
+            out[i] = (sin(phase) * 0.92 + noiseOut * 0.08) * env[i]
         }
         return normalize(out)
     }

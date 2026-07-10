@@ -22,13 +22,13 @@ final class SettingsStore: ObservableObject {
     init() {
         defaults.register(defaults: [
             Keys.isEnabled: true,
-            Keys.pack: SoundPack.rubberSnap.rawValue,
+            Keys.pack: SoundPack.softPop.rawValue,
             Keys.volume: 0.8,
             Keys.sensitivity: 1.0,
             Keys.hapticsEnabled: false,
         ])
         isEnabled = defaults.bool(forKey: Keys.isEnabled)
-        pack = SoundPack(rawValue: defaults.string(forKey: Keys.pack) ?? "") ?? .rubberSnap
+        pack = SoundPack(rawValue: defaults.string(forKey: Keys.pack) ?? "") ?? .softPop
         volume = defaults.double(forKey: Keys.volume)
         sensitivity = defaults.double(forKey: Keys.sensitivity)
         hapticsEnabled = defaults.bool(forKey: Keys.hapticsEnabled)

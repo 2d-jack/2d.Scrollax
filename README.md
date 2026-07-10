@@ -58,14 +58,16 @@ any existing app. There are no bundled audio assets.
 
 ## Sound packs
 
-- **Rubber Snap** — a dull, resonant pluck
 - **Gluey Grip** — a longer, descending resonant drag
 - **Mechanical Click** — a soft, damped tap
 - **Soft Pop** — a muted sine "thock"
+- **Bubble Pop** — a lighter, airier little pop
+- **Velvet Tap** — a deeper, cushioned tap
+- **Water Drop** — a rounded, liquid "plip"
 
 ## Features
 
-- Four built-in sound packs, switchable from the menu bar popover
+- Six built-in sound packs, switchable from the menu bar popover
 - Volume and sensitivity (tick spacing) controls
 - Optional Taptic Engine haptic feedback on scroll ticks
 - Launch at login

@@ -20,7 +20,7 @@ final class AudioEngine {
     private var bufferPool: [AVAudioPCMBuffer] = []
     private var seed: UInt64 = UInt64(Date().timeIntervalSince1970 * 1000) &+ 0x9E3779B97F4A7C15
 
-    var pack: SoundPack = .rubberSnap {
+    var pack: SoundPack = .softPop {
         didSet { rerenderPool() }
     }
 
