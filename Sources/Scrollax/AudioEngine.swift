@@ -1,5 +1,6 @@
 import AVFoundation
 import AudioToolbox
+import AppKit
 
 /// Owns the audio graph and a small pool of player voices so overlapping scroll ticks
 /// can layer on top of each other instead of cutting each other off — that layering is
@@ -54,13 +55,52 @@ final class AudioEngine {
         engine.connect(limiter, to: engine.outputNode, format: nil)
 
         engine.mainMixerNode.outputVolume = volume
+        startEngine()
+        rerenderPool()
+
+        // The engine dies silently when the audio route changes (lid close/open,
+        // headphones, display sleep) and never restarts on its own. Watch for the
+        // config change plus system wake and bring it back up.
+        observers.append(NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange, object: engine, queue: .main
+        ) { [weak self] _ in
+            self?.restartEngine()
+        })
+        observers.append(NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.restartEngine(force: true)
+        })
+    }
+
+    deinit {
+        observers.forEach {
+            NotificationCenter.default.removeObserver($0)
+            NSWorkspace.shared.notificationCenter.removeObserver($0)
+        }
+    }
+
+    private var observers: [NSObjectProtocol] = []
+
+    private func startEngine() {
         engine.prepare()
         do {
             try engine.start()
         } catch {
             FileHandle.standardError.write("Scrollax: failed to start audio engine: \(error)\n".data(using: .utf8)!)
         }
-        rerenderPool()
+    }
+
+    /// After a route change the engine may report `isRunning == true` while producing
+    /// no audio, so wake events force a full stop/start; the player nodes are stopped
+    /// first because they hold render state from the dead configuration.
+    private func restartEngine(force: Bool = false) {
+        if engine.isRunning {
+            guard force else { return }
+            engine.stop()
+        }
+        voices.forEach { $0.player.stop() }
+        startEngine()
     }
 
     private func rerenderPool(count: Int = 18) {
@@ -71,6 +111,10 @@ final class AudioEngine {
     /// - Parameter intensity: 0...1, derived from scroll speed. Louder and slightly
     ///   higher-pitched at higher intensity, like a real material responding to force.
     func playTick(intensity: Float) {
+        if !engine.isRunning {
+            restartEngine()
+            guard engine.isRunning else { return }
+        }
         guard let buffer = bufferPool.randomElement() else { return }
         let clamped = max(0, min(1, intensity))
         let voice = voices[nextVoice]
